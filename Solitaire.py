@@ -1,6 +1,6 @@
 import pygame
 import sys
-from pygame.locals import QUIT
+from pygame.locals import QUIT, Rect
 
 Display_width = 1200
 Display_height = 800
@@ -25,6 +25,10 @@ for e_channel in channels:
                                                     (Surface_width, Surface_height))
 
 
+play_button_rect = Rect(800, 600, 300, 100)
+play_button_image = pygame.transform.scale(pygame.image.load("resources/play_button.png"), play_button_rect.size)
+
+
 def main():
     CHANNEL = "LOBBY"
     while True:
@@ -36,6 +40,9 @@ def main():
 
         SURFACE.fill((255, 0, 0))
         SURFACE.blit(backgrounds[CHANNEL], (0, 0))
+
+        if CHANNEL == "LOBBY":
+            SURFACE.blit(play_button_image, play_button_rect.topleft)
 
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
 
