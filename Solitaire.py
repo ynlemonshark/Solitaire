@@ -18,8 +18,15 @@ DISPLAY = pygame.display.set_mode((Display_width, Display_height))
 SURFACE = pygame.Surface((Surface_width, Surface_height))
 FPSCLOCK = pygame.time.Clock()
 
+channels = ("LOBBY", "GAME")
+backgrounds = {}
+for e_channel in channels:
+    backgrounds[e_channel] = pygame.transform.scale(pygame.image.load("resources/backgrounds/{}.png".format(e_channel)),
+                                                    (Surface_width, Surface_height))
+
 
 def main():
+    CHANNEL = "LOBBY"
     while True:
         pygame_events = pygame.event.get()
         for pygame_event in pygame_events:
@@ -28,11 +35,12 @@ def main():
                 sys.exit()
 
         SURFACE.fill((255, 0, 0))
+        SURFACE.blit(backgrounds[CHANNEL], (0, 0))
 
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
 
         pygame.display.update()
-        FPSCLOCK.tick()
+        FPSCLOCK.tick(FPS)
 
 
 if __name__ == "__main__":
