@@ -1,6 +1,6 @@
 import pygame
 import sys
-from pygame.locals import QUIT, Rect
+from pygame.locals import QUIT, Rect, MOUSEBUTTONDOWN
 
 Display_width = 1200
 Display_height = 800
@@ -37,6 +37,14 @@ def main():
             if pygame_event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+
+            elif pygame_event.type == MOUSEBUTTONDOWN:
+                event_pos = (pygame_event.pos[0] / display_ratio_x,
+                             pygame_event.pos[1] / display_ratio_y)
+
+                if CHANNEL == "LOBBY":
+                    if play_button_rect.collidepoint(event_pos):
+                        CHANNEL = "GAME"
 
         SURFACE.fill((255, 0, 0))
         SURFACE.blit(backgrounds[CHANNEL], (0, 0))
