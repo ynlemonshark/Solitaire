@@ -57,9 +57,25 @@ for e_number in range(shapes * denominations):
 
     card_images.append(e_image)
 
+foundation_start_topleft = (30, 30)
+foundation_distance = 150
+foundation_rects = []
+for e_shape in range(shapes):
+    foundation_rects.append(Rect(foundation_start_topleft[0] + e_shape * foundation_distance,
+                                 foundation_start_topleft[1], card_size[0], card_size[1]))
+
+foundation_empty_image = pygame.transform.scale(pygame.image.load("resources/foundation_void.png"),
+                                                (card_size[0] * shapes, card_size[1]))
+
+
+def card_number(shape, denomination):
+    return shape + denomination * 4
 
 def main():
     CHANNEL = "LOBBY"
+
+    foundations = [0, 0, 0, 0]
+
     while True:
         pygame_events = pygame.event.get()
         for pygame_event in pygame_events:
@@ -82,10 +98,13 @@ def main():
             SURFACE.blit(play_button_image, play_button_rect.topleft)
 
         elif CHANNEL == "GAME":
-             for ew_shape in range(shapes):
-                 for ew_denomination in range(denominations):
-                     SURFACE.blit(card_images[ew_denomination * 4 + ew_shape],
-                                  (10 + card_size[0] * ew_denomination, 10 + card_size[1] * ew_shape))
+            for ew_shape in range(shapes):
+                SURFACE.blit(foundation_empty_image, foundation_rects[ew_shape].topleft,
+                             (card_size[0] * ew_shape, 0, card_size[0], card_size[1]))
+                if foundations[ew_shape]:
+                    SURFACE.blit(card_images[card_number(ew_shape, foundations[ew_shape] - 1)],
+                                 foundation_rects[ew_shape].topleft)
+
 
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
 
