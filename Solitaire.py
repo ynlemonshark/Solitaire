@@ -1,6 +1,7 @@
 import pygame
 import sys
 from pygame.locals import QUIT, Rect, MOUSEBUTTONDOWN
+from random import shuffle
 
 Display_width = 1200
 Display_height = 800
@@ -66,6 +67,15 @@ for e_shape in range(shapes):
 
 foundation_empty_image = pygame.transform.scale(pygame.image.load("resources/foundation_void.png"),
                                                 (card_size[0] * shapes, card_size[1]))
+stacks_number = 7
+stacks_first_topleft = (30, 250)
+stacks_distance = 150
+stacks_toplefts = []
+for e_number in range(stacks_number):
+    stacks_toplefts.append((stacks_first_topleft[0] + e_number * stacks_distance, stacks_first_topleft[1]))
+
+stacking_distance = 50
+
 
 
 def card_number(shape, denomination):
@@ -74,7 +84,17 @@ def card_number(shape, denomination):
 def main():
     CHANNEL = "LOBBY"
 
+    deck = list(range(shapes * denominations))
+
+    shuffle(deck)
+
     foundations = [0, 0, 0, 0]
+    stacks = []
+    for em_number in range(stacks_number):
+        em_list = []
+        for em_repeat in range(em_number + 1):
+            em_list.append(deck.pop())
+        stacks.append(em_list)
 
     while True:
         pygame_events = pygame.event.get()
@@ -104,6 +124,12 @@ def main():
                 if foundations[ew_shape]:
                     SURFACE.blit(card_images[card_number(ew_shape, foundations[ew_shape] - 1)],
                                  foundation_rects[ew_shape].topleft)
+
+            for ew_number in range(stacks_number):
+                for ew_repeat in range(len(stacks[ew_number])):
+                    SURFACE.blit(card_images[stacks[ew_number][ew_repeat]],
+                                 (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] + stacking_distance
+                                  * ew_repeat))
 
 
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
