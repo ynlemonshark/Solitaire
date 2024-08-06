@@ -77,6 +77,9 @@ for e_number in range(stacks_number):
 stacking_distance = 50
 
 
+card_cover = pygame.transform.scale(pygame.image.load("resources/card_cover.png"), card_size)
+
+
 
 def card_number(shape, denomination):
     return shape + denomination * 4
@@ -95,6 +98,8 @@ def main():
         for em_repeat in range(em_number + 1):
             em_list.append(deck.pop())
         stacks.append(em_list)
+
+    covered = list(range(stacks_number))
 
     while True:
         pygame_events = pygame.event.get()
@@ -127,9 +132,13 @@ def main():
 
             for ew_number in range(stacks_number):
                 for ew_repeat in range(len(stacks[ew_number])):
-                    SURFACE.blit(card_images[stacks[ew_number][ew_repeat]],
-                                 (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] + stacking_distance
-                                  * ew_repeat))
+                    if covered[ew_number] > ew_repeat:
+                        SURFACE.blit(card_cover, (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
+                                                 stacking_distance * ew_repeat))
+                    else:
+                        SURFACE.blit(card_images[stacks[ew_number][ew_repeat]],
+                                     (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] + stacking_distance
+                                      * ew_repeat))
 
 
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
