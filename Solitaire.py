@@ -74,10 +74,18 @@ stacks_toplefts = []
 for e_number in range(stacks_number):
     stacks_toplefts.append((stacks_first_topleft[0] + e_number * stacks_distance, stacks_first_topleft[1]))
 
-stacking_distance = 50
+stacking_distance = 30
 
 
 card_cover = pygame.transform.scale(pygame.image.load("resources/card_cover.png"), card_size)
+
+deck_topleft = (1000, 30)
+
+deck_card_topleft = (850, 30)
+deck_card_previous1_topleft = (810, 30)
+deck_card_previous2_topleft = (770, 30)
+
+deck_empty_image = pygame.transform.scale(pygame.image.load("resources/deck_empty.png"), card_size)
 
 
 
@@ -88,6 +96,8 @@ def main():
     CHANNEL = "LOBBY"
 
     deck = list(range(shapes * denominations))
+
+    deck_card = 0
 
     shuffle(deck)
 
@@ -116,6 +126,12 @@ def main():
                     if play_button_rect.collidepoint(event_pos):
                         CHANNEL = "GAME"
 
+                elif CHANNEL == "GAME":
+                    if Rect(deck_topleft, card_size).collidepoint(event_pos):
+                        deck_card += 1
+                        if deck_card > len(deck):
+                            deck_card = 0
+
         SURFACE.fill((255, 0, 0))
         SURFACE.blit(backgrounds[CHANNEL], (0, 0))
 
@@ -139,6 +155,18 @@ def main():
                         SURFACE.blit(card_images[stacks[ew_number][ew_repeat]],
                                      (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] + stacking_distance
                                       * ew_repeat))
+
+            if deck_card != len(deck):
+                SURFACE.blit(card_cover, deck_topleft)
+            else:
+                SURFACE.blit(deck_empty_image, deck_topleft)
+
+            if deck_card >= 3:
+                SURFACE.blit(card_images[deck[deck_card - 3]], deck_card_previous2_topleft)
+            if deck_card >= 2:
+                SURFACE.blit(card_images[deck[deck_card - 2]], deck_card_previous1_topleft)
+            if deck_card:
+                SURFACE.blit(card_images[deck[deck_card - 1]], deck_card_topleft)
 
 
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
