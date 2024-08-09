@@ -1,6 +1,6 @@
 import pygame
 import sys
-from pygame.locals import QUIT, Rect, MOUSEBUTTONDOWN
+from pygame.locals import QUIT, Rect, MOUSEBUTTONDOWN, MOUSEBUTTONUP
 from random import shuffle
 
 Display_width = 1200
@@ -35,6 +35,9 @@ shape_topleft = (10, 10)
 shape_size = (18, 18)
 shape_image = pygame.transform.scale(pygame.image.load("resources/card_shapes.png"),
                                      (shape_size[0] * shapes, shape_size[1]))
+
+black_shapes = (0, 3)
+red_shapes = (1, 2)
 
 denominations = 13
 denomination_topleft = (12, 30)
@@ -88,9 +91,9 @@ deck_card_previous2_topleft = (770, 30)
 deck_empty_image = pygame.transform.scale(pygame.image.load("resources/deck_empty.png"), card_size)
 
 
-
 def card_number(shape, denomination):
     return shape + denomination * 4
+
 
 def main():
     CHANNEL = "LOBBY"
@@ -110,6 +113,9 @@ def main():
         stacks.append(em_list)
 
     covered = list(range(stacks_number))
+
+    dragging = False
+    dragging_card_data = {}
 
     while True:
         pygame_events = pygame.event.get()
@@ -132,8 +138,58 @@ def main():
                         if deck_card > len(deck):
                             deck_card = 0
 
+                    for ew_number in range(stacks_number):
+                        for ew_repeat in range(len(stacks[ew_number])):
+                            if covered[ew_number] <= ew_repeat:
+                                if ew_repeat == len(stacks[ew_number]) - 1:
+                                    ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
+                                                   ew_repeat * stacking_distance, card_size[0], card_size[1])
+                                else:
+                                    ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
+                                                   ew_repeat * stacking_distance, card_size[0], stacking_distance)
+                                if ew_rect.collidepoint(event_pos):
+                                    dragging = True
+                                    dragging_card_data = {"location": "stacks", "stack": ew_number, "index": ew_repeat}
+
+            elif pygame_event.type == MOUSEBUTTONUP:
+                event_pos = (pygame_event.pos[0] / display_ratio_x,
+                             pygame_event.pos[1] / display_ratio_y)
+
+                if CHANNEL == "GAME":
+                    if dragging:
+                        if dragging_card_data["location"] == "stacks":
+                            for ew_number in range(stacks_number):
+                                if len(stacks[ew_number]) == 0:
+                                    ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1],
+                                                   card_size[0], card_size[1])
+                                else:
+                                    ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1]
+                                                   + stacking_distance * (len(stacks[ew_number]) - 1),
+                                                   card_size[0], card_size[1])
+
+                                if ew_rect.collidepoint(event_pos):
+                                    ew_list = []
+                                    for ew_repeat in range(len(stacks[dragging_card_data["stack"]]) -
+                                                           dragging_card_data["index"]):
+                                        ew_list.append(stacks[dragging_card_data["stack"]].pop())
+                                    ew_list = ew_list[::-1]
+                                    stacks[ew_number].extend(ew_list)
+
+                                    break
+
+                        for ew_number in range(stacks_number):
+                            if len(stacks[ew_number]) <= covered[ew_number]:
+                                covered[ew_number] = len(stacks[ew_number]) - 1
+
+
+                        dragging = False
+
+
         SURFACE.fill((255, 0, 0))
         SURFACE.blit(backgrounds[CHANNEL], (0, 0))
+
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = (mouse_pos[0] / display_ratio_x, mouse_pos[1] / display_ratio_y)
 
         if CHANNEL == "LOBBY":
             SURFACE.blit(play_button_image, play_button_rect.topleft)
@@ -148,13 +204,24 @@ def main():
 
             for ew_number in range(stacks_number):
                 for ew_repeat in range(len(stacks[ew_number])):
-                    if covered[ew_number] > ew_repeat:
-                        SURFACE.blit(card_cover, (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
-                                                 stacking_distance * ew_repeat))
+                    ew_draw_okay = False
+                    if not dragging:
+                        ew_draw_okay = True
                     else:
-                        SURFACE.blit(card_images[stacks[ew_number][ew_repeat]],
-                                     (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] + stacking_distance
-                                      * ew_repeat))
+                        if dragging_card_data["location"] != "stacks":
+                            ew_draw_okay = True
+                        else:
+                            if dragging_card_data["stack"] != ew_number or dragging_card_data["index"] > ew_repeat:
+                                ew_draw_okay = True
+
+                    if ew_draw_okay:
+                        if covered[ew_number] > ew_repeat:
+                            SURFACE.blit(card_cover, (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
+                                                     stacking_distance * ew_repeat))
+                        else:
+                            SURFACE.blit(card_images[stacks[ew_number][ew_repeat]],
+                                         (stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] + stacking_distance
+                                          * ew_repeat))
 
             if deck_card != len(deck):
                 SURFACE.blit(card_cover, deck_topleft)
@@ -167,6 +234,13 @@ def main():
                 SURFACE.blit(card_images[deck[deck_card - 2]], deck_card_previous1_topleft)
             if deck_card:
                 SURFACE.blit(card_images[deck[deck_card - 1]], deck_card_topleft)
+
+            if dragging:
+                if dragging_card_data["location"] == "stacks":
+                    for ew_index in range(len(stacks[dragging_card_data["stack"]]) - dragging_card_data["index"]):
+                        SURFACE.blit(card_images[stacks[dragging_card_data["stack"]][ew_index + dragging_card_data["index"]]],
+                                     (mouse_pos[0], mouse_pos[1] + ew_index * stacking_distance))
+
 
 
         DISPLAY.blit(pygame.transform.scale(SURFACE, (Display_width, Display_height)), (0, 0))
