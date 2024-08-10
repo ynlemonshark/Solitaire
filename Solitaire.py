@@ -168,14 +168,34 @@ def main():
                                                    card_size[0], card_size[1])
 
                                 if ew_rect.collidepoint(event_pos):
-                                    ew_list = []
-                                    for ew_repeat in range(len(stacks[dragging_card_data["stack"]]) -
-                                                           dragging_card_data["index"]):
-                                        ew_list.append(stacks[dragging_card_data["stack"]].pop())
-                                    ew_list = ew_list[::-1]
-                                    stacks[ew_number].extend(ew_list)
+                                    ew_able = []
+                                    if not len(stacks[ew_number]):
+                                        for ew_shape in range(shapes):
+                                            ew_able.append(card_number(ew_shape, denominations - 1))
 
-                                    break
+                                    elif stacks[ew_number][-1] // shapes != denominations - 1:
+                                        ew_able_shapes = []
+                                        if stacks[ew_number][-1] % shapes in black_shapes:
+                                            ew_able_shapes.extend(red_shapes)
+                                        else:
+                                            ew_able_shapes.extend(black_shapes)
+
+                                        for ew_shape in ew_able_shapes:
+                                            ew_able.append(card_number(ew_shape, stacks[ew_number][-1] // shapes - 1))
+
+                                    ew_move = False
+                                    if dragging_card_data["location"] == "stacks":
+                                        ew_move = stacks[dragging_card_data["stack"]][dragging_card_data["index"]] in ew_able
+
+                                    if ew_move:
+                                        ew_list = []
+                                        for ew_repeat in range(len(stacks[dragging_card_data["stack"]]) -
+                                                               dragging_card_data["index"]):
+                                            ew_list.append(stacks[dragging_card_data["stack"]].pop())
+                                        ew_list = ew_list[::-1]
+                                        stacks[ew_number].extend(ew_list)
+
+                                        break
 
                         for ew_number in range(stacks_number):
                             if len(stacks[ew_number]) <= covered[ew_number]:
