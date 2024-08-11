@@ -151,51 +151,65 @@ def main():
                                     dragging = True
                                     dragging_card_data = {"location": "stacks", "stack": ew_number, "index": ew_repeat}
 
+                    if Rect(deck_card_topleft, card_size).collidepoint(event_pos):
+                        dragging = True
+                        dragging_card_data = {"location": "deck_card"}
+
             elif pygame_event.type == MOUSEBUTTONUP:
                 event_pos = (pygame_event.pos[0] / display_ratio_x,
                              pygame_event.pos[1] / display_ratio_y)
 
                 if CHANNEL == "GAME":
                     if dragging:
-                        if dragging_card_data["location"] == "stacks":
-                            for ew_number in range(stacks_number):
-                                if len(stacks[ew_number]) == 0:
-                                    ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1],
-                                                   card_size[0], card_size[1])
-                                else:
-                                    ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1]
-                                                   + stacking_distance * (len(stacks[ew_number]) - 1),
-                                                   card_size[0], card_size[1])
+                        for ew_number in range(stacks_number):
+                            if len(stacks[ew_number]) == 0:
+                                ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1],
+                                               card_size[0], card_size[1])
+                            else:
+                                ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1]
+                                               + stacking_distance * (len(stacks[ew_number]) - 1),
+                                               card_size[0], card_size[1])
 
-                                if ew_rect.collidepoint(event_pos):
-                                    ew_able = []
-                                    if not len(stacks[ew_number]):
-                                        for ew_shape in range(shapes):
-                                            ew_able.append(card_number(ew_shape, denominations - 1))
+                            if ew_rect.collidepoint(event_pos):
+                                ew_able = []
+                                if not len(stacks[ew_number]):
+                                    for ew_shape in range(shapes):
+                                        ew_able.append(card_number(ew_shape, denominations - 1))
 
-                                    elif stacks[ew_number][-1] // shapes != denominations - 1:
-                                        ew_able_shapes = []
-                                        if stacks[ew_number][-1] % shapes in black_shapes:
-                                            ew_able_shapes.extend(red_shapes)
-                                        else:
-                                            ew_able_shapes.extend(black_shapes)
+                                elif stacks[ew_number][-1] // shapes != denominations - 1:
+                                    ew_able_shapes = []
+                                    if stacks[ew_number][-1] % shapes in black_shapes:
+                                        ew_able_shapes.extend(red_shapes)
+                                    else:
+                                        ew_able_shapes.extend(black_shapes)
 
-                                        for ew_shape in ew_able_shapes:
-                                            ew_able.append(card_number(ew_shape, stacks[ew_number][-1] // shapes - 1))
+                                    for ew_shape in ew_able_shapes:
+                                        ew_able.append(card_number(ew_shape, stacks[ew_number][-1] // shapes - 1))
 
-                                    ew_move = False
+                                ew_move = False
+                                if dragging_card_data["location"] == "stacks":
+                                    ew_move = stacks[dragging_card_data["stack"]][dragging_card_data["index"]] in ew_able
+
+                                elif dragging_card_data["location"] == "deck_card":
+                                    ew_move = deck[deck_card - 1] in ew_able
+
+                                if ew_move:
+                                    ew_list = []
                                     if dragging_card_data["location"] == "stacks":
-                                        ew_move = stacks[dragging_card_data["stack"]][dragging_card_data["index"]] in ew_able
-
-                                    if ew_move:
-                                        ew_list = []
                                         for ew_repeat in range(len(stacks[dragging_card_data["stack"]]) -
                                                                dragging_card_data["index"]):
                                             ew_list.append(stacks[dragging_card_data["stack"]].pop())
                                         ew_list = ew_list[::-1]
-                                        stacks[ew_number].extend(ew_list)
+                                    elif dragging_card_data["location"] == "deck_card":
+                                        ew_list.append(deck[deck_card - 1])
+                                        deck[deck_card - 1] = -1
+                                        deck.remove(-1)
 
-                                        break
+                                        deck_card -= 1
+
+                                    stacks[ew_number].extend(ew_list)
+
+                                    break
 
                         for ew_number in range(stacks_number):
                             if len(stacks[ew_number]) <= covered[ew_number]:
@@ -252,14 +266,21 @@ def main():
                 SURFACE.blit(card_images[deck[deck_card - 3]], deck_card_previous2_topleft)
             if deck_card >= 2:
                 SURFACE.blit(card_images[deck[deck_card - 2]], deck_card_previous1_topleft)
+
             if deck_card:
-                SURFACE.blit(card_images[deck[deck_card - 1]], deck_card_topleft)
+                if dragging:
+                    if not dragging_card_data["location"] == "deck_card":
+                        SURFACE.blit(card_images[deck[deck_card - 1]], deck_card_topleft)
+                else:
+                    SURFACE.blit(card_images[deck[deck_card - 1]], deck_card_topleft)
 
             if dragging:
                 if dragging_card_data["location"] == "stacks":
                     for ew_index in range(len(stacks[dragging_card_data["stack"]]) - dragging_card_data["index"]):
                         SURFACE.blit(card_images[stacks[dragging_card_data["stack"]][ew_index + dragging_card_data["index"]]],
                                      (mouse_pos[0], mouse_pos[1] + ew_index * stacking_distance))
+                elif dragging_card_data["location"] == "deck_card":
+                    SURFACE.blit(card_images[deck[deck_card - 1]], mouse_pos)
 
 
 
