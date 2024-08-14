@@ -138,22 +138,37 @@ def main():
                         if deck_card > len(deck):
                             deck_card = 0
 
-                    for ew_number in range(stacks_number):
-                        for ew_repeat in range(len(stacks[ew_number])):
-                            if covered[ew_number] <= ew_repeat:
-                                if ew_repeat == len(stacks[ew_number]) - 1:
-                                    ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
-                                                   ew_repeat * stacking_distance, card_size[0], card_size[1])
-                                else:
-                                    ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
-                                                   ew_repeat * stacking_distance, card_size[0], stacking_distance)
-                                if ew_rect.collidepoint(event_pos):
-                                    dragging = True
-                                    dragging_card_data = {"location": "stacks", "stack": ew_number, "index": ew_repeat}
+                    if pygame_event.button == pygame.BUTTON_LEFT:
+                        for ew_number in range(stacks_number):
+                            for ew_repeat in range(len(stacks[ew_number])):
+                                if covered[ew_number] <= ew_repeat:
+                                    if ew_repeat == len(stacks[ew_number]) - 1:
+                                        ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
+                                                       ew_repeat * stacking_distance, card_size[0], card_size[1])
+                                    else:
+                                        ew_rect = Rect(stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] +
+                                                       ew_repeat * stacking_distance, card_size[0], stacking_distance)
+                                    if ew_rect.collidepoint(event_pos):
+                                        dragging = True
+                                        dragging_card_data = {"location": "stacks", "stack": ew_number, "index": ew_repeat}
 
-                    if Rect(deck_card_topleft, card_size).collidepoint(event_pos):
-                        dragging = True
-                        dragging_card_data = {"location": "deck_card"}
+                        if Rect(deck_card_topleft, card_size).collidepoint(event_pos):
+                            dragging = True
+                            dragging_card_data = {"location": "deck_card"}
+
+                    elif pygame_event.button == pygame.BUTTON_RIGHT:
+                        for ew_number in range(stacks_number):
+                            if Rect((stacks_toplefts[ew_number][0], stacks_toplefts[ew_number][1] + stacking_distance
+                                                                    * ew_number), card_size).collidepoint(event_pos):
+                                ew_shape = stacks[ew_number][-1] % shapes
+                                if foundations[ew_shape] == stacks[ew_number][-1] // shapes:
+                                    foundations[ew_shape] += 1
+
+                                    stacks[ew_number] = stacks[ew_number][0:-2]
+
+                        for ew_number in range(stacks_number):
+                            if len(stacks[ew_number]) <= covered[ew_number]:
+                                covered[ew_number] = len(stacks[ew_number]) - 1
 
             elif pygame_event.type == MOUSEBUTTONUP:
                 event_pos = (pygame_event.pos[0] / display_ratio_x,
