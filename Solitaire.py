@@ -166,6 +166,15 @@ def main():
 
                                     stacks[ew_number] = stacks[ew_number][0:-2]
 
+                        if deck_card > 0:
+                            if Rect(deck_card_topleft, card_size).collidepoint(event_pos):
+                                ew_shape = deck[deck_card - 1] % shapes
+                                if foundations[ew_shape] == deck[deck_card - 1] // shapes:
+                                    deck.remove(deck[deck_card - 1])
+                                    foundations[ew_shape] += 1
+
+                                    deck_card -= 1
+
                         for ew_number in range(stacks_number):
                             if len(stacks[ew_number]) <= covered[ew_number]:
                                 covered[ew_number] = len(stacks[ew_number]) - 1
